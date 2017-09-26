@@ -1,0 +1,16 @@
+Package: pkpd
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Authors@R: person("Jadon", "Wagstaff", email = "jadon.wagstaff@hsc.utah.edu",
+  role = c("aut", "cre"))
+Description: Package which assists in PK/PD analysis.
+License: CC0
+Encoding: UTF-8
+LazyData: true
+Imports: dplyr,
+  purrr,
+  readr,
+  tibble,
+  ggplot2
+RoxygenNote: 6.0.1
