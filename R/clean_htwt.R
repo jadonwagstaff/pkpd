@@ -50,9 +50,15 @@
 #' normal if height is abnormal. 0 if there is no abnormality in
 #' height detected.
 #'
+#' \strong{HT_Z:} Z score on expected distribution of height for
+#' age and sex.
+#'
 #' \strong{WT_FLAG:} Numerical value. >0 signifying distance from
 #' normal if weight is abnormal. 0 if there is no abnormality in
 #' weight detected.
+#'
+#' #' \strong{WT_Z:} Z score on expected distribution of Weight for
+#' age and sex.
 #'
 #' \strong{AGE_Y:} Age of patient in years.
 #'
@@ -64,6 +70,18 @@ clean_htwt <- function(df, lower_percentile) {
   #--------------------------------------------------------------------------------
   # ESSENTIAL FUNCTIONS
   #--------------------------------------------------------------------------------
+
+  # find z-score based on ht/wt, sex, and age group
+  score <- function(x, age, set) {
+    l <- splines[[set]][["L"]](age)
+    m <- splines[[set]][["M"]](age)
+    s <- splines[[set]][["S"]](age)
+
+    output <- rep(0, length(x))
+    output[l != 0] <- (x^l - m^l) / (m^l * l * s)
+    output[l == 0] <- log(x / m) / s
+    return(output)
+  }
 
   # find_set_anomalies
   #
@@ -145,7 +163,6 @@ clean_htwt <- function(df, lower_percentile) {
   #--------------------------------------------------------------------------------
   # PROCESS INPUT
   #--------------------------------------------------------------------------------
-  df <- dplyr::mutate(df, ROW = row_number())
 
   # prepare percentile information
   percentile <- switch(as.character(lower_percentile),
@@ -165,12 +182,14 @@ clean_htwt <- function(df, lower_percentile) {
   htwt <- tibble::tibble(AGE = age,
                          HT = df$HT,
                          WT = df$WT,
-                         SEX = df$SEX,
-                         ROW = df$ROW
-                         )
+                         SEX = df$SEX
+  )
   htwt <- dplyr::mutate(htwt,
+                        ROW = row_number(),
                         HT_FLAG = 0,
-                        WT_FLAG = 0)
+                        WT_FLAG = 0,
+                        HT_Z = 0,
+                        WT_Z = 0)
 
 
   #--------------------------------------------------------------------------------
@@ -196,13 +215,45 @@ clean_htwt <- function(df, lower_percentile) {
   htwt$WT_FLAG[htwt_set$ROW] <- NA
 
   #--------------------------------------------------------------------------------
+  # FIND ANOMALIES (Z-SCORES)
+  #--------------------------------------------------------------------------------
+  # 0-36 months female
+  htwt_set <- dplyr::filter(htwt, AGE <= 36 & SEX == 0)
+  htwt_set$WT_Z <- score(htwt_set$WT, htwt_set$AGE, "WFI")
+  htwt_set$HT_Z <- score(htwt_set$HT, htwt_set$AGE, "HFI")
+  htwt$HT_Z[htwt_set$ROW] <- minmax(htwt$HT_Z[htwt_set$ROW], htwt_set$HT_Z)
+  htwt$WT_Z[htwt_set$ROW] <- minmax(htwt$WT_Z[htwt_set$ROW], htwt_set$WT_Z)
+
+  # 0-36 months male
+  htwt_set <- dplyr::filter(htwt, AGE <= 36 & SEX == 1)
+  htwt_set$WT_Z <- score(htwt_set$WT, htwt_set$AGE, "WMI")
+  htwt_set$HT_Z <- score(htwt_set$HT, htwt_set$AGE, "HMI")
+  htwt$HT_Z[htwt_set$ROW] <- minmax(htwt$HT_Z[htwt_set$ROW], htwt_set$HT_Z)
+  htwt$WT_Z[htwt_set$ROW] <- minmax(htwt$WT_Z[htwt_set$ROW], htwt_set$WT_Z)
+
+  # 24-240 months female
+  htwt_set <- dplyr::filter(htwt, AGE > 24 & age <= 240 & SEX == 0)
+  htwt_set$WT_Z <- score(htwt_set$WT, htwt_set$AGE, "WF")
+  htwt_set$HT_Z <- score(htwt_set$HT, htwt_set$AGE, "HF")
+  htwt$HT_Z[htwt_set$ROW] <- minmax(htwt$HT_Z[htwt_set$ROW], htwt_set$HT_Z)
+  htwt$WT_Z[htwt_set$ROW] <- minmax(htwt$WT_Z[htwt_set$ROW], htwt_set$WT_Z)
+
+  # 24-240 months male
+  htwt_set <- dplyr::filter(htwt, AGE > 24 & age <= 240 & SEX == 1)
+  htwt_set$WT_Z <- score(htwt_set$WT, htwt_set$AGE, "WM")
+  htwt_set$HT_Z <- score(htwt_set$HT, htwt_set$AGE, "HM")
+  htwt$HT_Z[htwt_set$ROW] <- minmax(htwt$HT_Z[htwt_set$ROW], htwt_set$HT_Z)
+  htwt$WT_Z[htwt_set$ROW] <- minmax(htwt$WT_Z[htwt_set$ROW], htwt_set$WT_Z)
+
+  #--------------------------------------------------------------------------------
   # GENERATE OUTPUT
   #--------------------------------------------------------------------------------
   df <- dplyr::mutate(df,
-              HT_FLAG = htwt$HT_FLAG,
-              WT_FLAG = htwt$WT_FLAG,
-              AGE_Y = htwt$AGE / 12)
-  df <- dplyr::select(df, -ROW)
+                      HT_FLAG = htwt$HT_FLAG,
+                      HT_Z = htwt$HT_Z,
+                      WT_FLAG = htwt$WT_FLAG,
+                      WT_Z = htwt$WT_Z,
+                      AGE_Y = htwt$AGE / 12)
 
   return(df)
 

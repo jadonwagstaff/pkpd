@@ -49,9 +49,15 @@ with specific colums:
 normal if height is abnormal. 0 if there is no abnormality in
 height detected.
 
+\strong{HT_Z:} Z score on expected distribution of height for
+age and sex.
+
 \strong{WT_FLAG:} Numerical value. >0 signifying distance from
 normal if weight is abnormal. 0 if there is no abnormality in
 weight detected.
+
+#' \strong{WT_Z:} Z score on expected distribution of Weight for
+age and sex.
 
 \strong{AGE_Y:} Age of patient in years.
 }
