@@ -1,3 +1,9 @@
+# Jadon Wagstaff
+# University of Utah Health
+# Pediatrics
+# Clinical Pharmacology
+# 2017
+
 #' Height and Weight graphing function.
 #'
 #' Uses CDC height and weight expected values to add percentile lines
