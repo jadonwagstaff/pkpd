@@ -34,9 +34,6 @@ to height/age or weight/age graphs.
 \details{
 See \url{https://www.cdc.gov/growthcharts/percentile_data_files.htm}
 for information on the data used to make percentile lines.
-
-Datasets are included in package as statage, lenageinf, wtage,
-and wtageinf.
 }
 \examples{
 library(tidyverse)

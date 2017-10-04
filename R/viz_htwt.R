@@ -6,9 +6,6 @@
 #' See \url{https://www.cdc.gov/growthcharts/percentile_data_files.htm}
 #' for information on the data used to make percentile lines.
 #'
-#' Datasets are included in package as statage, lenageinf, wtage,
-#' and wtageinf.
-#'
 #' @param p a ggplot object.
 #' @param category "WT" for a weight/age graph and "HT" for a
 #' height/age graph.
@@ -46,6 +43,14 @@
 #' p2
 #' @export
 viz_htwt <- function(p, category, sex, inf_only = FALSE, percentiles = c("P3", "P50", "P97")) {
+
+  #--------------------------------------------------------------------------------
+  # ESSENTIAL FUNCTIONS
+  #--------------------------------------------------------------------------------
+
+  # get_spline_data
+  #
+  # used to obtain data required to build spline
   get_spline_data <- function(d, sex, percentile) {
     if (sex == 0) {
       d <- dplyr::filter(d, Sex == 2)
@@ -59,12 +64,18 @@ viz_htwt <- function(p, category, sex, inf_only = FALSE, percentiles = c("P3", "
     return(d)
   }
 
+  #--------------------------------------------------------------------------------
+  # PROCESS INPUT
+  #--------------------------------------------------------------------------------
+
+  # pick color
   if (sex == 0) {
     sex_color <- "#ef8a62"
   } else {
     sex_color <- "#67a9cf"
   }
 
+  # pick data
   if (category == "HT") {
     child <- statage
     infant <- lenageinf
@@ -73,6 +84,9 @@ viz_htwt <- function(p, category, sex, inf_only = FALSE, percentiles = c("P3", "
     infant <- wtageinf
   }
 
+  #--------------------------------------------------------------------------------
+  # ADD SPLINE LAYERS
+  #--------------------------------------------------------------------------------
   for (i in seq_along(percentiles)) {
     spline_data <- get_spline_data(infant, sex, percentiles[i])
     spline <- splinefun(x = spline_data$x,
@@ -109,6 +123,8 @@ viz_htwt <- function(p, category, sex, inf_only = FALSE, percentiles = c("P3", "
                                  hjust = 0)
     }
   }
+
+  # set x boundaries
   if (inf_only == TRUE) {
     p <- p + ggplot2::xlim(0, 4)
   } else {
