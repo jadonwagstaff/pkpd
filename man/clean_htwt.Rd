@@ -4,28 +4,12 @@
 \alias{clean_htwt}
 \title{Height and Weight anomaly detection.}
 \usage{
-clean_htwt(df, lower_percentile)
+clean_htwt(df, lower_percentile, HEIGHT = HEIGHT, WEIGHT = WEIGHT,
+  SEX = SEX, TIME = TIME, BIRTH_DT = BIRTH_DT, AGE_M = AGE_M)
 }
 \arguments{
-\item{df}{Data frame containing specific columns:
-
-\strong{HT:} Patient height (cm).
-
-\strong{WT:} Patient weight (kg).
-
-\strong{SEX:} Patient sex 0 = female, 1 = female.
-
-either
-
-\strong{TIME:} Dates when corresponding height and weight values
-were collected. Must be R datetime object.
-
-\strong{BIRTH_DT:} Birth date of patient. Must be R date or
-datetime object.
-
-or
-
-\strong{AGE_M:} Age of patient in months.}
+\item{df}{Data frame containing weight, height, the time weight and
+height were collected, sex, and eighter birth date, or age in months.}
 
 \item{lower_percentile}{Integer value representing the lower
 percentile, upper percentile will automatically be calculated.
@@ -40,6 +24,20 @@ lower_percentile = 5, (5-95).
 lower_percentile = 10, (10-90).
 
 lower_percentile = 25, (25-75).}
+
+\item{HEIGHT}{Column name for patient height (cm).}
+
+\item{WEIGHT}{Column name for patient weight (kg).}
+
+\item{SEX}{Column name for patient sex 0 = female, 1 = male.}
+
+\item{TIME}{Column name for dates when corresponding height and
+weight values were collected. Must be R datetime object.}
+
+\item{BIRTH_DT}{Birth date of patient. Must be R date or
+datetime object.}
+
+\item{AGE_M}{Column name for age of patient in months.}
 }
 \value{
 Returns a data frame identifying height weight anomalies
@@ -56,7 +54,7 @@ age and sex.
 normal if weight is abnormal. 0 if there is no abnormality in
 weight detected.
 
-#' \strong{WT_Z:} Z score on expected distribution of Weight for
+\strong{WT_Z:} Z score on expected distribution of Weight for
 age and sex.
 
 \strong{AGE_Y:} Age of patient in years.
@@ -71,9 +69,15 @@ for data sources used to detect anomalies.
 
 Datasets are included in package as statage, lenageinf, wtage,
 and wtageinf.
+
+If any dataframe input column has a different name, define
+that columns name in the input parameters (See Examples).
+
+See http://r4ds.had.co.nz/ chapters 11.4, 11.5 and 16 for creating
+date or datetime R objects.
 }
 \examples{
-clean_htwt(htwt_example, 3)
+clean_htwt(htwt_example, 3, HEIGHT = HT, WEIGHT = WT)
 }
 \keyword{clean}
 \keyword{cleaning,}

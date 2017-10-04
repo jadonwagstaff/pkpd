@@ -9,25 +9,28 @@
 #' Datasets are included in package as statage, lenageinf, wtage,
 #' and wtageinf.
 #'
-#' @param df Data frame containing specific columns:
+#' If any dataframe input column has a different name, define
+#' that columns name in the input parameters (See Examples).
 #'
-#' \strong{HT:} Patient height (cm).
+#' See http://r4ds.had.co.nz/ chapters 11.4, 11.5 and 16 for creating
+#' date or datetime R objects.
 #'
-#' \strong{WT:} Patient weight (kg).
+#' @param df Data frame containing weight, height, the time weight and
+#' height were collected, sex, and eighter birth date, or age in months.
 #'
-#' \strong{SEX:} Patient sex 0 = female, 1 = female.
+#' @param HEIGHT Column name for patient height (cm).
 #'
-#' either
+#' @param WEIGHT Column name for patient weight (kg).
 #'
-#' \strong{TIME:} Dates when corresponding height and weight values
-#' were collected. Must be R datetime object.
+#' @param SEX Column name for patient sex 0 = female, 1 = male.
 #'
-#' \strong{BIRTH_DT:} Birth date of patient. Must be R date or
+#' @param TIME Column name for dates when corresponding height and
+#' weight values were collected. Must be R datetime object.
+#'
+#' @param BIRTH_DT Birth date of patient. Must be R date or
 #' datetime object.
 #'
-#' or
-#'
-#' \strong{AGE_M:} Age of patient in months.
+#' @param AGE_M Column name for age of patient in months.
 #'
 #' @param lower_percentile Integer value representing the lower
 #' percentile, upper percentile will automatically be calculated.
@@ -57,16 +60,17 @@
 #' normal if weight is abnormal. 0 if there is no abnormality in
 #' weight detected.
 #'
-#' #' \strong{WT_Z:} Z score on expected distribution of Weight for
+#' \strong{WT_Z:} Z score on expected distribution of Weight for
 #' age and sex.
 #'
 #' \strong{AGE_Y:} Age of patient in years.
 #'
 #' @keywords height, weight, cleaning, clean
 #' @examples
-#' clean_htwt(htwt_example, 3)
+#' clean_htwt(htwt_example, 3, HEIGHT = HT, WEIGHT = WT)
 #' @export
-clean_htwt <- function(df, lower_percentile) {
+clean_htwt <- function(df, lower_percentile, HEIGHT = HEIGHT, WEIGHT = WEIGHT,
+                       SEX = SEX, TIME = TIME, BIRTH_DT = BIRTH_DT, AGE_M = AGE_M) {
   #--------------------------------------------------------------------------------
   # ESSENTIAL FUNCTIONS
   #--------------------------------------------------------------------------------
@@ -98,10 +102,10 @@ clean_htwt <- function(df, lower_percentile) {
                    "infant" = wtageinf,
                    "child" = wtage)
       htwt_set$HT_FLAG <- compare_spline(x = htwt_set$AGE,
-                                         y = htwt_set$HT,
+                                         y = htwt_set$HEIGHT,
                                          d = get_spline_data(ha, sex))
       htwt_set$WT_FLAG <- compare_spline(x = htwt_set$AGE,
-                                         y = htwt_set$WT,
+                                         y = htwt_set$WEIGHT,
                                          d = get_spline_data(wa, sex))
     }
     return(htwt_set)
@@ -164,6 +168,14 @@ clean_htwt <- function(df, lower_percentile) {
   # PROCESS INPUT
   #--------------------------------------------------------------------------------
 
+  # prepare column names
+  HEIGHT <- deparse(substitute(HEIGHT))
+  WEIGHT <- deparse(substitute(WEIGHT))
+  SEX <- deparse(substitute(SEX))
+  TIME <- deparse(substitute(TIME))
+  BIRTH_DT <- deparse(substitute(BIRTH_DT))
+  AGE_M <- deparse(substitute(AGE_M))
+
   # prepare percentile information
   percentile <- switch(as.character(lower_percentile),
                        "3" = c(low = "P3", high = "P97"),
@@ -172,17 +184,17 @@ clean_htwt <- function(df, lower_percentile) {
                        "25" = c(low = "P25", high = "P75"))
 
   # prepare htwt tibble which will be used for calculations
-  if ("AGE_M" %in% colnames(df)) {
-    age <- df$AGE_M
+  if (AGE_M %in% colnames(df)) {
+    age <- df[[AGE_M]]
   } else {
-    time <- as.numeric(readr::parse_datetime(df$TIME)) / (24 * 3600 * 30.41667)
-    birth_dt <- as.numeric(readr::parse_datetime(df$BIRTH_DT)) / (24 * 3600 * 30.41667)
+    time <- as.numeric(readr::parse_datetime(df[[TIME]])) / (24 * 3600 * 30.41667)
+    birth_dt <- as.numeric(readr::parse_datetime(df[[BIRTH_DT]])) / (24 * 3600 * 30.41667)
     age <- time - birth_dt
   }
   htwt <- tibble::tibble(AGE = age,
-                         HT = df$HT,
-                         WT = df$WT,
-                         SEX = df$SEX
+                         HEIGHT = df[[HEIGHT]],
+                         WEIGHT = df[[WEIGHT]],
+                         SEX = df[[SEX]]
   )
   htwt <- dplyr::mutate(htwt,
                         ROW = row_number(),
@@ -219,29 +231,29 @@ clean_htwt <- function(df, lower_percentile) {
   #--------------------------------------------------------------------------------
   # 0-36 months female
   htwt_set <- dplyr::filter(htwt, AGE <= 36 & SEX == 0)
-  htwt_set$WT_Z <- score(htwt_set$WT, htwt_set$AGE, "WFI")
-  htwt_set$HT_Z <- score(htwt_set$HT, htwt_set$AGE, "HFI")
+  htwt_set$WT_Z <- score(htwt_set$WEIGHT, htwt_set$AGE, "WFI")
+  htwt_set$HT_Z <- score(htwt_set$HEIGHT, htwt_set$AGE, "HFI")
   htwt$HT_Z[htwt_set$ROW] <- minmax(htwt$HT_Z[htwt_set$ROW], htwt_set$HT_Z)
   htwt$WT_Z[htwt_set$ROW] <- minmax(htwt$WT_Z[htwt_set$ROW], htwt_set$WT_Z)
 
   # 0-36 months male
   htwt_set <- dplyr::filter(htwt, AGE <= 36 & SEX == 1)
-  htwt_set$WT_Z <- score(htwt_set$WT, htwt_set$AGE, "WMI")
-  htwt_set$HT_Z <- score(htwt_set$HT, htwt_set$AGE, "HMI")
+  htwt_set$WT_Z <- score(htwt_set$WEIGHT, htwt_set$AGE, "WMI")
+  htwt_set$HT_Z <- score(htwt_set$HEIGHT, htwt_set$AGE, "HMI")
   htwt$HT_Z[htwt_set$ROW] <- minmax(htwt$HT_Z[htwt_set$ROW], htwt_set$HT_Z)
   htwt$WT_Z[htwt_set$ROW] <- minmax(htwt$WT_Z[htwt_set$ROW], htwt_set$WT_Z)
 
   # 24-240 months female
   htwt_set <- dplyr::filter(htwt, AGE > 24 & age <= 240 & SEX == 0)
-  htwt_set$WT_Z <- score(htwt_set$WT, htwt_set$AGE, "WF")
-  htwt_set$HT_Z <- score(htwt_set$HT, htwt_set$AGE, "HF")
+  htwt_set$WT_Z <- score(htwt_set$WEIGHT, htwt_set$AGE, "WF")
+  htwt_set$HT_Z <- score(htwt_set$HEIGHT, htwt_set$AGE, "HF")
   htwt$HT_Z[htwt_set$ROW] <- minmax(htwt$HT_Z[htwt_set$ROW], htwt_set$HT_Z)
   htwt$WT_Z[htwt_set$ROW] <- minmax(htwt$WT_Z[htwt_set$ROW], htwt_set$WT_Z)
 
   # 24-240 months male
   htwt_set <- dplyr::filter(htwt, AGE > 24 & age <= 240 & SEX == 1)
-  htwt_set$WT_Z <- score(htwt_set$WT, htwt_set$AGE, "WM")
-  htwt_set$HT_Z <- score(htwt_set$HT, htwt_set$AGE, "HM")
+  htwt_set$WT_Z <- score(htwt_set$WEIGHT, htwt_set$AGE, "WM")
+  htwt_set$HT_Z <- score(htwt_set$HEIGHT, htwt_set$AGE, "HM")
   htwt$HT_Z[htwt_set$ROW] <- minmax(htwt$HT_Z[htwt_set$ROW], htwt_set$HT_Z)
   htwt$WT_Z[htwt_set$ROW] <- minmax(htwt$WT_Z[htwt_set$ROW], htwt_set$WT_Z)
 
