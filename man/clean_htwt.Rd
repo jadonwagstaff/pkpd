@@ -4,26 +4,12 @@
 \alias{clean_htwt}
 \title{Height and Weight anomaly detection.}
 \usage{
-clean_htwt(df, lower_percentile, HEIGHT = HEIGHT, WEIGHT = WEIGHT,
-  SEX = SEX, TIME = TIME, BIRTH_DT = BIRTH_DT, AGE_M = AGE_M)
+clean_htwt(df, HEIGHT = HEIGHT, WEIGHT = WEIGHT, SEX = SEX, TIME = TIME,
+  BIRTH_DT = BIRTH_DT, AGE_M = AGE_M)
 }
 \arguments{
 \item{df}{Data frame containing weight, height, the time weight and
-height were collected, sex, and eighter birth date, or age in months.}
-
-\item{lower_percentile}{Integer value representing the lower
-percentile, upper percentile will automatically be calculated.
-
-Options: 3,5,10,25
-
-Example: lower_percentile = 3. Normal will be defined as inbetween
-fith and ninety fifth percentile (3-97).
-
-lower_percentile = 5, (5-95).
-
-lower_percentile = 10, (10-90).
-
-lower_percentile = 25, (25-75).}
+height were collected, sex, and eighter birth date or age in months.}
 
 \item{HEIGHT}{Column name for patient height (cm).}
 
@@ -34,7 +20,7 @@ lower_percentile = 25, (25-75).}
 \item{TIME}{Column name for dates when corresponding height and
 weight values were collected. Must be R datetime object.}
 
-\item{BIRTH_DT}{Birth date of patient. Must be R date or
+\item{BIRTH_DT}{Column name for birth date of patient. Must be R date or
 datetime object.}
 
 \item{AGE_M}{Column name for age of patient in months.}
@@ -43,21 +29,11 @@ datetime object.}
 Returns a data frame identifying height weight anomalies
 with specific colums:
 
-\strong{HT_FLAG:} Numerical value. >0 signifying distance from
-normal if height is abnormal. 0 if there is no abnormality in
-height detected.
-
 \strong{HT_Z:} Z score on expected distribution of height for
 age and sex.
 
-\strong{WT_FLAG:} Numerical value. >0 signifying distance from
-normal if weight is abnormal. 0 if there is no abnormality in
-weight detected.
-
 \strong{WT_Z:} Z score on expected distribution of Weight for
 age and sex.
-
-\strong{AGE_Y:} Age of patient in years.
 }
 \description{
 Uses CDC height and weight expected values to determine anomalies
@@ -65,19 +41,27 @@ in height and weight values for cleaning purposes.
 }
 \details{
 See \url{https://www.cdc.gov/growthcharts/percentile_data_files.htm}
-for data sources used to detect anomalies.
-
-Datasets are included in package as statage, lenageinf, wtage,
-and wtageinf.
+for data sources used to detect anomalies. Z-scores are calculated
+based on LMS parameters as described in [1]. If subject is greater
+than 20 years old, height and weight will be compared to the distribution
+for a 20 year old.
 
 If any dataframe input column has a different name, define
 that columns name in the input parameters (See Examples).
-
-See http://r4ds.had.co.nz/ chapters 11.4, 11.5 and 16 for creating
+See http://r4ds.had.co.nz chapters 11.4, 11.5 and 16 for creating
 date or datetime R objects.
+
+1. Flegal KM, Cole TJ. Construction of LMS parameters for the Centers
+for Disease Control and prevention 2000 growth chart. National health
+statistics reports; no 63. Hyattsville, MD: National Center for Health
+Statistics. 2013.
 }
 \examples{
-clean_htwt(htwt_example, 3, HEIGHT = HT, WEIGHT = WT)
+htwt <- clean_htwt(htwt_example, HEIGHT = HT, WEIGHT = WT)
+htwt
+# filter out results for inbetween 5th and 95th percentile
+htwt <- dplyr::filter(htwt, abs(HT_Z) > 1.96 | abs(WT_Z) > 1.96)
+htwt
 }
 \keyword{clean}
 \keyword{cleaning,}
