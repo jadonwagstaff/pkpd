@@ -59,7 +59,7 @@ Statistics. 2013.
 \examples{
 htwt <- clean_htwt(htwt_example, HEIGHT = HT, WEIGHT = WT)
 htwt
-# filter out results for inbetween 5th and 95th percentile
+# filter out results for outside of 5th and 95th percentile
 htwt <- dplyr::filter(htwt, abs(HT_Z) > 1.96 | abs(WT_Z) > 1.96)
 htwt
 }

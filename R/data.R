@@ -20,3 +20,15 @@
 "htwt_example"
 
 
+#' Predicted and observed example dataset.
+#'
+#' @format A data frame with 556 rows and 4 variables:
+#' \describe{
+#'   \item{ID}{Individual identifier}
+#'   \item{TIME}{Time that the observed concentrations were recorded}
+#'   \item{DV}{Observed concentration values}
+#'   \item{PRED}{Predicted concentration values}
+#' }
+"pred_example"
+
+
