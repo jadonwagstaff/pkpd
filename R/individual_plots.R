@@ -50,10 +50,10 @@ individual_plots <- function(df, filename, ID = ID, TIME = TIME, DV = DV, PRED =
   PRED <- deparse(substitute(PRED))
 
   # define variables
-  first_lims <- c(min(df$PRED, df$DV, 0), max(df$PRED, df$DV))
-  second_xlims <- c(min(df$TIME, 0), max(df$TIME))
-  second_ylims <- c(min(df$PRED, df$DV, 0), max(df$PRED, df$DV))
-  indices <- dplyr::group_indices(df, ID)
+  first_lims <- c(min(df[PRED], df[DV], 0), max(df[PRED], df[DV]))
+  second_xlims <- c(min(df[TIME], 0), max(df[TIME]))
+  second_ylims <- c(min(df[PRED], df[DV], 0), max(df[PRED], df[DV]))
+  indices <- dplyr::group_indices_(df, ID)
   plots <- list()
 
   # open File
@@ -65,10 +65,10 @@ individual_plots <- function(df, filename, ID = ID, TIME = TIME, DV = DV, PRED =
   for (i in seq(1, length(unique(indices)), 2)) {
     for (j in 0:1) {
       # Prediction vs Observed
-      plots[[j*2 + 1]] <- ggplot2::ggplot(df[indices == i + j,], ggplot2::aes(PRED, DV)) +
+      plots[[j*2 + 1]] <- ggplot2::ggplot(df[indices == i + j,], ggplot2::aes_string(PRED, DV)) +
         ggthemes::theme_tufte() +
         ggplot2::theme(plot.title = ggplot2::element_text(hjust = .5), plot.margin = grid::unit(c(.5, .5, .5, .5), 'cm')) +
-        ggplot2::ggtitle(unique(df[indices == i + j,]$ID)) +
+        ggplot2::ggtitle(unique(df[indices == i + j,][ID])) +
         ggplot2::xlab("Predicted Response") +
         ggplot2::ylab("Observed Response") +
         ggplot2::xlim(first_lims) +
@@ -79,11 +79,11 @@ individual_plots <- function(df, filename, ID = ID, TIME = TIME, DV = DV, PRED =
       plots[[j*2 + 2]] <- ggplot2::ggplot(df[indices == i + j,]) +
         ggthemes::theme_tufte() +
         ggplot2::theme(plot.title = ggplot2::element_text(hjust = .5), plot.margin = grid::unit(c(.5, .5, .5, .5), 'cm')) +
-        ggplot2::ggtitle(unique(df[indices == i + j,]$ID)) +
+        ggplot2::ggtitle(unique(df[indices == i + j,][ID])) +
         ggplot2::xlab("Time") +
         ggplot2::ylab("Response (Predicted: Red)") +
-        ggplot2::geom_point(ggplot2::aes(TIME, PRED), size = 1.25, color = '#b22222') +
-        ggplot2::geom_point(ggplot2::aes(TIME, DV), alpha = .6, size = 1.25) +
+        ggplot2::geom_point(ggplot2::aes_string(TIME, PRED), size = 1.25, color = '#b22222') +
+        ggplot2::geom_point(ggplot2::aes_string(TIME, DV), alpha = .6, size = 1.25) +
         ggplot2::xlim(second_xlims) +
         ggplot2::ylim(second_ylims)
     }

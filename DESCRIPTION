@@ -1,7 +1,7 @@
 Package: pkpd
 Type: Package
 Title: What the Package Does (Title Case)
-Version: 1.1.0
+Version: 1.1.1
 Authors@R: person("Jadon", "Wagstaff", email = "jadon.wagstaff@hsc.utah.edu",
   role = c("aut", "cre"))
 Description: Package which assists in PK/PD analysis.
