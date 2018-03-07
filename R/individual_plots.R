@@ -68,18 +68,18 @@ individual_plots <- function(df, filename, ID = ID, TIME = TIME, DV = DV, PRED =
       plots[[j*2 + 1]] <- ggplot2::ggplot(df[indices == i + j,], ggplot2::aes_string(PRED, DV)) +
         ggthemes::theme_tufte() +
         ggplot2::theme(plot.title = ggplot2::element_text(hjust = .5), plot.margin = grid::unit(c(.5, .5, .5, .5), 'cm')) +
-        ggplot2::ggtitle(unique(df[indices == i + j,][ID])) +
+        ggplot2::ggtitle(as.character(unique(df[indices == i + j,][ID]))) +
         ggplot2::xlab("Predicted Response") +
         ggplot2::ylab("Observed Response") +
         ggplot2::xlim(first_lims) +
         ggplot2::ylim(first_lims) +
-        ggplot2::annotate('segment', x = first_lims[1], y = first_lims[1], xend = first_lims[2], yend = first_lims[2], color = '#4682B4',alpha = .7) +
+        ggplot2::annotate('segment', x = first_lims[1], y = first_lims[1], xend = first_lims[2], yend = first_lims[2], color = '#4682B4') +
         ggplot2::geom_point(alpha = .6, size = 1.25)
       # Response vs Time
       plots[[j*2 + 2]] <- ggplot2::ggplot(df[indices == i + j,]) +
         ggthemes::theme_tufte() +
         ggplot2::theme(plot.title = ggplot2::element_text(hjust = .5), plot.margin = grid::unit(c(.5, .5, .5, .5), 'cm')) +
-        ggplot2::ggtitle(unique(df[indices == i + j,][ID])) +
+        ggplot2::ggtitle(as.character(unique(df[indices == i + j,][ID]))) +
         ggplot2::xlab("Time") +
         ggplot2::ylab("Response (Predicted: Red)") +
         ggplot2::geom_point(ggplot2::aes_string(TIME, PRED), size = 1.25, color = '#b22222') +
