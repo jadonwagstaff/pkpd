@@ -20,22 +20,29 @@ devtools::install_github("jadonwagstaff/pkpd")
 
 ## Functions
 
-* *viz_htwt* - provides a visual for percentile lines for height and weight 
-ages 0 to 20.
+### *viz_htwt*
+Provides a visual for percentile lines for height and weight ages 0 to 20.
 
-* *clean_htwt* - Determines z-score for distributions of height and weight for
-age and sex.
+### *clean_htwt* 
+Determines z-score for distributions of height and weight for age and sex.
+
+### *individual_plots*
+Plots concentration time curves for observed and predicted values.
+
+### 
 
 ## Datasets
 
-* *htwt_example* - Example dataset to use on *viz_htwt* and *clean_htwt*.
+### *htwt_example*
+Example dataset to use on *viz_htwt* and *clean_htwt*.
+
+### *pred_example*
+Example dataset to use on *individual_plots*.
 
 ## Author
-
 Jadon Wagstaff
 
 ## Licence
-
-Public Domain (CC0)
+CC0
 
 
