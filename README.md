@@ -38,6 +38,6 @@ devtools::install_github("jadonwagstaff/pkpd")
 Jadon Wagstaff
 
 ## Licence
-CC0
+MIT
 
 
